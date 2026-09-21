@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 130" width="300" height="130">
+  <g id="swoosh-emblem">
+    <!-- Yellow Swoosh Arc -->
+    <path d="M 25,60 C 60,10 170,5 230,35 C 265,52 275,85 245,110 C 220,130 170,115 190,75 C 205,45 250,55 240,82 C 235,95 210,95 215,80 C 220,68 240,65 230,50 C 215,35 150,30 85,55 Z" fill="#F5C400" />
+    
+    <!-- Outer Gold Ring -->
+    <circle cx="225" cy="45" r="32" fill="#F5C400" />
+    <circle cx="225" cy="45" r="28" fill="#FFFFFF" />
+    <circle cx="225" cy="45" r="26" fill="#005A36" />
+    
+    <!-- Protea Emblem Center -->
+    <g transform="translate(225, 45) scale(0.85)">
+      <!-- Outer Leaves -->
+      <path d="M 0,-24 C 6,-18 12,-10 12,0 C 12,10 6,18 0,24 C -6,18 -12,10 -12,0 C -12,-10 -6,-18 0,-24 Z" fill="#FFFFFF" />
+      <path d="M -16,-12 C -10,-16 -2,-18 0,-22 C 2,-18 10,-16 16,-12 C 18,-2 14,8 8,14 C 2,18 -2,18 -8,14 C -14,8 -18,-2 -16,-12 Z" fill="#005A36" />
+      
+      <!-- Inner Pink Petals -->
+      <path d="M 0,-18 L 5,-8 L 0,-2 L -5,-8 Z" fill="#E63946" />
+      <path d="M -6,-12 L -2,-4 L -8,2 L -12,-4 Z" fill="#E63946" />
+      <path d="M 6,-12 L 12,-4 L 8,2 L 2,-4 Z" fill="#E63946" />
+      <path d="M 0,-4 L 6,6 L 0,14 L -6,6 Z" fill="#005A36" />
+    </g>
+  </g>
+  
+  <!-- Text Section -->
+  <text x="10" y="105" font-family="'Inter', 'Arial Black', sans-serif" font-weight="900" font-size="38" fill="#005A36" letter-spacing="0.5">NETBALL</text>
+  <text x="85" y="125" font-family="'Inter', 'Arial', sans-serif" font-weight="800" font-style="italic" font-size="16" fill="#111111" letter-spacing="3">SOUTH AFRICA</text>
+</svg>
