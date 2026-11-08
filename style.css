@@ -336,6 +336,7 @@ body {
     border-radius: var(--radius-md);
     border: 1px solid var(--border-light);
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     box-shadow: var(--shadow-xs);
 }
 
@@ -397,6 +398,28 @@ body {
 .badge-expired { background: var(--status-expired-bg); color: var(--status-expired-text); }
 .badge-suspended { background: var(--status-suspended-bg); color: var(--status-suspended-text); }
 .badge-revoked { background: var(--status-revoked-bg); color: var(--status-revoked-text); }
+
+/* Card Type Classification Badges */
+.badge-type-national-grading {
+    background: #fef9c3;
+    color: #854d0e;
+    border: 1px solid #fde047;
+}
+.badge-type-provincial-grading {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+}
+.badge-type-technical-theory {
+    background: #e0f2fe;
+    color: #0369a1;
+    border: 1px solid #7dd3fc;
+}
+.badge-type-national-theory {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+}
 
 /* ==========================================================================
    CARD STUDIO & BATCH PDF
@@ -552,15 +575,20 @@ body {
    ========================================================================== */
 .card-pair {
     display: flex;
+    flex-direction: row;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 16px;
     justify-content: center;
+    align-items: center;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin-bottom: 24px;
 }
 
-/* Physical Card Container (Standard CR80 Dimensions) */
+/* Physical Card Container (CR80 Dimension - 1.2mm for Card Sleeve Fit: 84.4mm x 52.8mm) */
 .nsa-card {
-    width: 380px;
-    height: 245px;
+    width: 375px;
+    height: 239px;
     background-color: #ffffff;
     border-radius: 6px;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
@@ -589,30 +617,79 @@ body {
 .nsa-card-content {
     position: relative;
     z-index: 2;
-    padding: 10px 14px 8px 14px;
+    padding: 9px 12px 6px 12px;
     height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 }
 
-/* Header Titles */
+/* Registry Sub Navigation (4 Card Types) */
+.registry-sub-nav {
+    display: flex;
+    gap: 8px;
+    background: #f1f5f9;
+    padding: 6px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-light);
+    margin-bottom: 18px;
+    overflow-x: auto;
+}
+
+.registry-sub-tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.84rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.registry-sub-tab:hover {
+    color: var(--primary);
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.registry-sub-tab.active {
+    background: #ffffff;
+    color: var(--primary);
+    box-shadow: var(--shadow-sm);
+    border-bottom: 3px solid var(--accent);
+}
+
+.sub-tab-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+/* Header Titles (Reduced by 35-40% for balanced proportions) */
 .nsa-card-header {
     text-align: center;
 }
 
 .nsa-main-title {
     font-family: 'Montserrat', 'Inter', sans-serif;
-    font-size: 1.25rem;
-    font-weight: 900;
+    font-size: 0.82rem;
+    font-weight: 800;
     color: #000000;
-    letter-spacing: -0.01em;
-    line-height: 1.1;
+    letter-spacing: 0.1px;
+    line-height: 1.15;
 }
 
 .nsa-sub-title {
     font-family: 'Montserrat', 'Inter', sans-serif;
-    font-size: 0.85rem;
+    font-size: 0.60rem;
     font-weight: 800;
     color: #000000;
     text-transform: uppercase;
@@ -639,35 +716,35 @@ body {
 
 .nsa-member-fullname {
     font-family: 'Montserrat', sans-serif;
-    font-size: 1.15rem;
+    font-size: 0.76rem;
     font-weight: 900;
     color: #000000;
-    line-height: 1.15;
+    line-height: 1.2;
 }
 
 .nsa-member-id {
-    font-size: 0.8rem;
+    font-size: 0.68rem;
     font-weight: 700;
-    color: #1e293b;
+    color: #334155;
     margin-bottom: 2px;
 }
 
 /* Province & District Bordered Boxes */
 .nsa-boxes-row {
     display: flex;
-    gap: 8px;
+    gap: 6px;
 }
 
 .nsa-info-box {
     border: 1.5px dashed #94a3b8;
     border-radius: 4px;
-    padding: 3px 6px;
+    padding: 2px 5px;
     flex: 1;
     background: rgba(255, 255, 255, 0.85);
 }
 
 .nsa-info-box-title {
-    font-size: 0.62rem;
+    font-size: 0.60rem;
     font-weight: 800;
     text-decoration: underline;
     text-transform: uppercase;
@@ -675,7 +752,7 @@ body {
 }
 
 .nsa-info-box-value {
-    font-size: 0.82rem;
+    font-size: 0.80rem;
     font-weight: 700;
     color: #000000;
     margin-top: 1px;
@@ -684,7 +761,7 @@ body {
 /* Signatures Block */
 .nsa-signatures-row {
     display: flex;
-    gap: 16px;
+    gap: 12px;
     margin-top: 4px;
     align-items: flex-end;
 }
@@ -696,22 +773,22 @@ body {
 }
 
 .nsa-sig-img-container {
-    height: 28px;
+    height: 25px;
     display: flex;
     align-items: flex-end;
 }
 
 .nsa-sig-img {
-    height: 26px;
+    height: 24px;
     width: auto;
-    max-width: 85px;
+    max-width: 80px;
     object-fit: contain;
     mix-blend-mode: multiply;
     margin-bottom: 1px;
 }
 
 .nsa-sig-label {
-    font-size: 0.58rem;
+    font-size: 0.56rem;
     font-weight: 700;
     color: #000000;
     border-top: 1px solid #64748b;
@@ -720,50 +797,198 @@ body {
     margin-top: 1px;
 }
 
-/* Right Column Grade Box */
-.nsa-grade-box {
+/* ==========================================================================
+   OFFICIAL CARD TYPE 1 & 2: GRADING BOX (YELLOW & RED STYLES)
+   ========================================================================== */
+.nsa-grade-box-styled {
     width: 120px;
-    height: 125px;
-    background-color: var(--badge-bg);
-    border: 2px solid var(--badge-border);
-    box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.12);
+    height: 124px;
     border-radius: 4px;
+    position: relative;
+    display: flex;
+    box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+.nsa-badge-yellow {
+    background: linear-gradient(135deg, #fff799 0%, #ffeb60 100%);
+    border: 2px solid #ca8a04;
+}
+
+.nsa-badge-red {
+    background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);
+    border: 2px solid #dc2626;
+}
+
+.nsa-grade-validity-strip {
+    width: 22px;
+    height: 100%;
+    position: relative;
+    border-right: 1px solid rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 0.25);
+    user-select: none;
+    overflow: visible;
+    flex-shrink: 0;
+}
+
+.nsa-grade-validity-strip span {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-90deg);
+    white-space: nowrap;
+    font-size: 0.54rem;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: 0.5px;
+    line-height: 1;
+}
+
+.nsa-grade-main-area {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 6px;
+    justify-content: space-between;
+    padding: 5px 4px 5px 4px;
     text-align: center;
 }
 
-.nsa-grade-title {
-    font-size: 0.85rem;
+.nsa-grade-category-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.86rem;
     font-weight: 800;
     color: #000000;
-    margin-bottom: 2px;
+    letter-spacing: 0.3px;
 }
 
-.nsa-grade-code {
-    font-family: 'Impact', 'Arial Black', sans-serif;
-    font-size: 2.2rem;
+.nsa-grade-big-char {
+    font-family: 'Impact', 'Georgia', 'Arial Black', sans-serif;
+    font-size: 3.05rem;
     font-weight: 900;
     color: #000000;
     line-height: 1;
-    letter-spacing: 1px;
+    margin: 2px 0;
+    text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.5);
 }
 
-/* Card Footer Logo */
+/* ==========================================================================
+   OFFICIAL CARD TYPE 3 & 4: THEORY RESULT CARDS (BLUE & GREEN BLOCKS)
+   ========================================================================== */
+.nsa-theory-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: space-between;
+}
+
+.nsa-theory-header-section {
+    text-align: center;
+}
+
+.nsa-theory-member-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-top: 4px;
+}
+
+.nsa-theory-grid-container {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+    margin-top: 6px;
+    flex: 1;
+}
+
+.theory-blocks-wrapper {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+}
+
+.theory-block {
+    flex: 1;
+    height: 104px;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 5px 4px;
+    box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.12);
+    text-align: center;
+}
+
+.theory-block-blue {
+    background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
+    border: 1.5px solid #38bdf8;
+}
+
+.theory-block-green {
+    background: linear-gradient(180deg, #f0fdf4 0%, #d1fae5 100%);
+    border: 1.5px solid #34d399;
+}
+
+.theory-block-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.theory-block-year {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #0f172a;
+    min-height: 14px;
+}
+
+.theory-block-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.74rem;
+    font-weight: 800;
+    color: #000000;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-top: 2px;
+}
+
+.theory-block-score {
+    font-family: 'Montserrat', 'Inter', sans-serif;
+    font-size: 1.45rem;
+    font-weight: 900;
+    color: #000000;
+    margin-bottom: 2px;
+    line-height: 1.1;
+}
+
+.theory-district-box {
+    width: 88px;
+    border: 1.5px dashed #94a3b8;
+    border-radius: 4px;
+    padding: 5px 4px;
+    background: rgba(255, 255, 255, 0.85);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+/* Card Footer Logo (Lifted up from bottom card boundary) */
 .nsa-card-footer {
     display: flex;
     justify-content: flex-end;
     align-items: flex-end;
-    padding-top: 2px;
+    padding: 0 8px 6px 8px;
+    margin-bottom: 2px;
 }
 
 .nsa-bottom-logo {
-    height: 35px;
+    height: 26px;
     width: auto;
     object-fit: contain;
+    margin-bottom: 3px;
+    margin-right: 3px;
 }
 
 /* Back of Card */
@@ -772,9 +997,9 @@ body {
 }
 
 .nsa-back-body {
-    padding: 16px 14px;
+    padding: 12px 12px;
     display: flex;
-    gap: 14px;
+    gap: 12px;
     align-items: center;
     flex: 1;
     z-index: 2;
@@ -782,10 +1007,10 @@ body {
 }
 
 .qr-box {
-    width: 110px;
-    height: 110px;
+    width: 104px;
+    height: 104px;
     background: #ffffff;
-    padding: 5px;
+    padding: 4px;
     border: 2px solid #005A36;
     border-radius: 6px;
     display: flex;
@@ -800,7 +1025,7 @@ body {
 
 .nsa-back-instructions {
     flex: 1;
-    font-size: 0.68rem;
+    font-size: 0.66rem;
     color: #334155;
 }
 
@@ -930,6 +1155,7 @@ body {
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    padding: 16px;
 }
 
 .modal-card {
@@ -940,6 +1166,20 @@ body {
     box-shadow: var(--shadow-lg);
     overflow: hidden;
     border: 1px solid var(--border-light);
+    max-height: 92vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-card form,
+.modal-card .modal-body {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.modal-header,
+.modal-footer {
+    flex-shrink: 0;
 }
 
 .modal-header {
@@ -1005,22 +1245,353 @@ body {
 }
 
 /* ==========================================================================
-   RESPONSIVE DESIGN ADAPTATION
+   RESPONSIVE DESIGN SYSTEM (DESKTOP, TABLET & MOBILE)
    ========================================================================== */
-@media (max-width: 900px) {
-    .studio-layout {
-        grid-template-columns: 1fr;
+
+/* 1. Large Tablets & Small Laptops (max-width: 1080px) */
+@media (max-width: 1080px) {
+    .app-container {
+        padding: 16px;
     }
     .filter-card {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 2fr 1fr 1fr;
     }
+    .studio-layout {
+        grid-template-columns: 290px 1fr;
+        gap: 16px;
+    }
+    .header-actions {
+        gap: 8px;
+    }
+}
+
+/* 2. Tablets in Portrait & Medium Devices (max-width: 860px) */
+@media (max-width: 860px) {
     .app-header {
         flex-direction: column;
         align-items: flex-start;
+        padding: 16px 20px;
         gap: 14px;
     }
     .header-actions {
         width: 100%;
-        justify-content: space-between;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .studio-layout {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    .batch-selection-card {
+        max-height: 320px;
+    }
+    .batch-list {
+        max-height: 220px;
+    }
+    .filter-card {
+        grid-template-columns: 1fr 1fr;
+    }
+    .pane-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    .registry-header-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+    }
+    .button-group {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+    .app-nav {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding: 4px;
+        gap: 6px;
+    }
+    .app-nav::-webkit-scrollbar {
+        display: none;
+    }
+    .nav-tab {
+        flex: 0 0 auto;
+        white-space: nowrap;
+        padding: 10px 16px;
+        font-size: 0.88rem;
+    }
+    .registry-sub-nav {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding: 4px;
+        gap: 6px;
+    }
+    .registry-sub-nav::-webkit-scrollbar {
+        display: none;
+    }
+    .registry-sub-tab {
+        flex: 0 0 auto;
+        white-space: nowrap;
+        padding: 8px 12px;
+        font-size: 0.82rem;
+    }
+    .preview-stage-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    .form-grid {
+        grid-template-columns: 1fr;
+        padding: 18px 20px;
+        gap: 14px;
+    }
+    .form-group.full-width {
+        grid-column: span 1;
+    }
+    .verifier-info-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
     }
 }
+
+/* 3. Mobile Phones (max-width: 640px) */
+@media (max-width: 640px) {
+    body {
+        padding: 0;
+    }
+    .app-container {
+        padding: 10px 8px;
+    }
+    .app-header {
+        padding: 12px 14px;
+        border-radius: var(--radius-md);
+        margin-bottom: 12px;
+    }
+    .header-brand {
+        gap: 10px;
+    }
+    .brand-logo-container {
+        padding: 3px 6px;
+    }
+    .main-header-logo {
+        height: 34px;
+    }
+    .brand-titles h1 {
+        font-size: 1.15rem;
+    }
+    .subtitle {
+        font-size: 0.72rem;
+    }
+    .header-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    .header-actions .db-status-pill,
+    .header-actions .role-badge,
+    .header-actions .btn {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+        font-size: 0.8rem;
+        padding: 7px 12px;
+    }
+    .filter-card {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding: 12px;
+    }
+    .pane-header h2 {
+        font-size: 1.1rem;
+    }
+    .button-group {
+        flex-direction: column;
+        width: 100%;
+        gap: 8px;
+    }
+    .button-group .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    .table-container {
+        margin: 0 -8px;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+    .data-table th,
+    .data-table td {
+        padding: 10px 12px;
+        font-size: 0.82rem;
+        white-space: nowrap;
+    }
+    .studio-preview-stage {
+        padding: 14px 8px;
+        min-height: auto;
+    }
+    .token-input-box {
+        padding: 16px 14px;
+    }
+    .input-with-button {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .input-with-button .btn-lg {
+        width: 100%;
+        justify-content: center;
+    }
+    .verifier-body {
+        padding: 16px;
+    }
+    .modal-overlay {
+        padding: 8px;
+    }
+    .modal-card {
+        width: 100%;
+        max-height: 94vh;
+        border-radius: var(--radius-md);
+    }
+    .modal-header {
+        padding: 14px 16px;
+    }
+    .modal-header h3 {
+        font-size: 1rem;
+    }
+    .modal-footer {
+        padding: 12px 16px;
+        flex-direction: column-reverse;
+        gap: 8px;
+    }
+    .modal-footer .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* 4. Extra Small Phones (max-width: 410px) - Smooth Proportion Scaling for 375px Cards */
+@media (max-width: 410px) {
+    .print-sheet {
+        gap: 12px;
+    }
+    .card-pair {
+        transform: scale(0.88);
+        transform-origin: top center;
+        margin-bottom: -16px;
+    }
+}
+
+@media (max-width: 350px) {
+    .card-pair {
+        transform: scale(0.78);
+        transform-origin: top center;
+        margin-bottom: -36px;
+    }
+}
+
+/* ==========================================================================
+   A4 PORTRAIT BATCH PRINTING: CR80 CARD SIZE - 1.2mm FOR SLEEVE (FRONT & BACK SIDE-BY-SIDE)
+   ========================================================================== */
+.pdf-exporting {
+    background: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    width: 735px !important;
+}
+
+.pdf-exporting .card-pair {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin-bottom: 12px !important;
+    padding: 2px 0 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    transform: none !important;
+}
+
+.pdf-exporting .nsa-card {
+    width: 360px !important;
+    height: 230px !important;
+    box-shadow: none !important;
+    border: 1px dashed #94a3b8 !important;
+    flex-shrink: 0 !important;
+}
+
+/* ==========================================================================
+   CLOUD DATABASE CONNECTION STATUS BADGE & UI
+   ========================================================================== */
+.db-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 12px;
+    border-radius: 9999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    border: 1px solid transparent;
+}
+
+.db-status-pill.local {
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #fde68a;
+}
+
+.db-status-pill.local:hover {
+    background: #fde68a;
+    box-shadow: 0 2px 6px rgba(146, 64, 14, 0.15);
+}
+
+.db-status-pill.connected {
+    background: #dcfce7;
+    color: #166534;
+    border-color: #bbf7d0;
+}
+
+.db-status-pill.connected:hover {
+    background: #bbf7d0;
+    box-shadow: 0 2px 6px rgba(22, 101, 52, 0.15);
+}
+
+.db-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.db-status-pill.local .db-status-dot, .db-status-dot.local {
+    background: #d97706;
+    box-shadow: 0 0 6px #f59e0b;
+}
+
+.db-status-pill.connected .db-status-dot, .db-status-dot.connected {
+    background: #16a34a;
+    box-shadow: 0 0 6px #22c55e;
+}
+
+.db-banner-local {
+    background: #fffbeb;
+    border: 1.5px solid #fde68a;
+    color: #92400e;
+    padding: 12px 14px;
+    border-radius: 8px;
+}
+
+.db-banner-connected {
+    background: #f0fdf4;
+    border: 1.5px solid #bbf7d0;
+    color: #166534;
+    padding: 12px 14px;
+    border-radius: 8px;
+}
+

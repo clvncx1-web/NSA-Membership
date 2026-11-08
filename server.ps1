@@ -21,6 +21,9 @@ while ($http.IsListening) {
             elseif ($localPath.EndsWith(".css")) { $response.ContentType = "text/css" }
             elseif ($localPath.EndsWith(".js")) { $response.ContentType = "application/javascript" }
             elseif ($localPath.EndsWith(".json")) { $response.ContentType = "application/json" }
+            elseif ($localPath.EndsWith(".png")) { $response.ContentType = "image/png" }
+            elseif ($localPath.EndsWith(".svg")) { $response.ContentType = "image/svg+xml" }
+            elseif ($localPath.EndsWith(".jpg") -or $localPath.EndsWith(".jpeg")) { $response.ContentType = "image/jpeg" }
             $response.ContentLength64 = $bytes.Length
             $response.OutputStream.Write($bytes, 0, $bytes.Length)
         } else {

@@ -1,0 +1,173 @@
+rules_version = '2';
+
+// ==============================================================================
+// Netball South Africa — Cloud Firestore Security Rules
+// ==============================================================================
+//
+// Assumed Data Model
+// ==============================================================================
+// Collection: members
+// Document ID: memberId (e.g., 'ZA-EC-PROV-2026-0001', 'ZA-NAT-UMP-802')
+//
+// Core Required Fields (11):
+//   - id: string (required, 3-64 chars, must match document ID)
+//   - cardType: string (required, enum: 'national_grading', 'provincial_grading', 'technical_theory', 'national_theory')
+//   - firstName: string (required, 1-100 chars)
+//   - surname: string (required, 1-100 chars)
+//   - idNumber: string (required, 0-50 chars)
+//   - province: string (required, 1-100 chars)
+//   - district: string (required, 0-100 chars)
+//   - issueDate: string (required, 4-30 chars)
+//   - expiryDate: string (required, 4-30 chars)
+//   - status: string (required, enum: 'Active', 'Expired', 'Suspended', 'Revoked')
+//   - token: string (required, 4-64 chars, used for QR and public verification)
+//
+// Optional / Card-Specific Fields (10):
+//   - gradeLetter: string (optional, 0-20 chars, e.g. 'A', 'B', 'C', 'D', 'E')
+//   - validityYears: string (optional, 0-100 chars, e.g. 'VALID 2026 - 2029')
+//   - nuaNumber: string (optional, 0-50 chars, e.g. '802')
+//   - level1Year: string (optional, 0-30 chars, e.g. '2025')
+//   - level1Score: string (optional, 0-30 chars, e.g. '74%')
+//   - level2Year: string (optional, 0-30 chars)
+//   - level2Score: string (optional, 0-30 chars)
+//   - level3Year: string (optional, 0-30 chars)
+//   - level3Score: string (optional, 0-30 chars)
+//   - lastAudit: string (optional, 0-250 chars)
+//
+// Total allowed fields: 21 (no unexpected or arbitrary fields permitted)
+// ==============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    // Check if user is authenticated via Firebase Auth (reserved for Phase B)
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if request contains all required fields
+    function hasRequiredFields(data, fields) {
+      return data.keys().hasAll(fields);
+    }
+
+    // Check that request does not contain any unrecognized fields
+    function hasOnlyAllowedFields(data, fields) {
+      return data.keys().hasOnly(fields);
+    }
+
+    // Validate a required string field's type and length bounds
+    function isValidRequiredString(data, field, minLen, maxLen) {
+      return data[field] is string &&
+             data[field].size() >= minLen &&
+             data[field].size() <= maxLen;
+    }
+
+    // Validate an optional string field (if present, must be string within bounds)
+    function isValidOptionalString(data, field, minLen, maxLen) {
+      return !(field in data) ||
+             (data[field] is string &&
+              data[field].size() >= minLen &&
+              data[field].size() <= maxLen);
+    }
+
+    // ===============================================================
+    // Domain Validator: Member Record
+    // ===============================================================
+    // Validates both new records (create) and existing records (update)
+    // to strictly prevent schema pollution and resource exhaustion / DoS.
+    function isValidMember(data, memberId) {
+      return (
+        // 1. Strict schema bounding: all 11 core keys required, max 21 allowed keys
+        hasRequiredFields(data, [
+          'id', 'cardType', 'firstName', 'surname', 'idNumber',
+          'province', 'district', 'issueDate', 'expiryDate', 'status', 'token'
+        ]) &&
+        hasOnlyAllowedFields(data, [
+          'id', 'cardType', 'firstName', 'surname', 'idNumber',
+          'province', 'district', 'issueDate', 'expiryDate', 'status', 'token',
+          'gradeLetter', 'validityYears', 'nuaNumber',
+          'level1Year', 'level1Score', 'level2Year', 'level2Score',
+          'level3Year', 'level3Score', 'lastAudit'
+        ]) &&
+
+        // 2. ID validation: must match document path and be valid length
+        data.id is string &&
+        data.id == memberId &&
+        data.id.size() >= 3 &&
+        data.id.size() <= 64 &&
+
+        // 3. Enum restrictions for cardType and status
+        data.cardType in [
+          'national_grading',
+          'provincial_grading',
+          'technical_theory',
+          'national_theory'
+        ] &&
+        data.status in [
+          'Active',
+          'Expired',
+          'Suspended',
+          'Revoked'
+        ] &&
+
+        // 4. Core required string length checks (DoS prevention)
+        isValidRequiredString(data, 'firstName', 1, 100) &&
+        isValidRequiredString(data, 'surname', 1, 100) &&
+        isValidRequiredString(data, 'idNumber', 0, 50) &&
+        isValidRequiredString(data, 'province', 1, 100) &&
+        isValidRequiredString(data, 'district', 0, 100) &&
+        isValidRequiredString(data, 'issueDate', 4, 30) &&
+        isValidRequiredString(data, 'expiryDate', 4, 30) &&
+        isValidRequiredString(data, 'token', 4, 64) &&
+
+        // 5. Optional string field checks
+        isValidOptionalString(data, 'gradeLetter', 0, 20) &&
+        isValidOptionalString(data, 'validityYears', 0, 100) &&
+        isValidOptionalString(data, 'nuaNumber', 0, 50) &&
+        isValidOptionalString(data, 'level1Year', 0, 30) &&
+        isValidOptionalString(data, 'level1Score', 0, 30) &&
+        isValidOptionalString(data, 'level2Year', 0, 30) &&
+        isValidOptionalString(data, 'level2Score', 0, 30) &&
+        isValidOptionalString(data, 'level3Year', 0, 30) &&
+        isValidOptionalString(data, 'level3Score', 0, 30) &&
+        isValidOptionalString(data, 'lastAudit', 0, 250)
+      );
+    }
+
+    // ===============================================================
+    // Members Collection Rules
+    // ===============================================================
+    match /members/{memberId} {
+      // READ:
+      // Public read access is permitted to support:
+      // - The management dashboard (loading member directory and real-time sync)
+      // - The verification portal (validating membership tokens/QR codes)
+      allow read: if true;
+
+      // CREATE:
+      // Permits document creation provided the payload passes comprehensive schema validation.
+      allow create: if isValidMember(request.resource.data, memberId);
+
+      // UPDATE:
+      // Enforces identical schema validation and ensures the document ID remains immutable.
+      allow update: if isValidMember(request.resource.data, memberId) &&
+                       request.resource.data.id == resource.data.id;
+
+      // DELETE:
+      // Allows deletion of existing member records.
+      allow delete: if resource != null;
+    }
+
+    // ===============================================================
+    // Default Deny Rule
+    // ===============================================================
+    // Deny read/write access to any other collections not explicitly defined above
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
