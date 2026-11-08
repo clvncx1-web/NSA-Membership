@@ -764,23 +764,42 @@ function updateSelectionCounter() {
     }
 }
 
-function renderBatchSelectionList() {
-    const container = document.getElementById("batchList");
-    if (!container) return;
-    container.innerHTML = "";
-    
+function getFilteredBatchMembers() {
     const cardTypeFilter = document.getElementById("batchFilterCardType") ? document.getElementById("batchFilterCardType").value : "";
     const provFilter = document.getElementById("batchFilterProvince") ? document.getElementById("batchFilterProvince").value : "";
 
-    const filtered = members.filter(m => {
+    return members.filter(m => {
         const matchesType = !cardTypeFilter || m.cardType === cardTypeFilter;
         const matchesProv = !provFilter || m.province === provFilter;
         return matchesType && matchesProv;
     });
+}
+
+function syncSelectAllBatchCheckbox() {
+    const selectAllChk = document.getElementById("selectAllBatchCheckbox");
+    if (!selectAllChk) return;
+    const filtered = getFilteredBatchMembers();
+    if (filtered.length === 0) {
+        selectAllChk.checked = false;
+        selectAllChk.indeterminate = false;
+        return;
+    }
+    const selectedCount = filtered.filter(m => selectedMemberIdsForBatch.has(m.id)).length;
+    selectAllChk.checked = selectedCount === filtered.length;
+    selectAllChk.indeterminate = selectedCount > 0 && selectedCount < filtered.length;
+}
+
+function renderBatchSelectionList() {
+    const container = document.getElementById("batchList");
+    if (!container) return;
+    container.innerHTML = "";
+
+    const filtered = getFilteredBatchMembers();
 
     if (filtered.length === 0) {
         container.innerHTML = `<div style="padding:14px; font-size:0.8rem; color:#64748b; text-align:center;">No officials match current filters</div>`;
         updateSelectionCounter();
+        syncSelectAllBatchCheckbox();
         return;
     }
 
@@ -801,6 +820,7 @@ function renderBatchSelectionList() {
     });
 
     updateSelectionCounter();
+    syncSelectAllBatchCheckbox();
 }
 
 function toggleBatchSelection(id, checked) {
@@ -810,21 +830,33 @@ function toggleBatchSelection(id, checked) {
         selectedMemberIdsForBatch.delete(id);
     }
     updateSelectionCounter();
+    syncSelectAllBatchCheckbox();
     renderPrintCards();
 }
 
-function selectAllForPrint(onlyActive = true) {
-    selectedMemberIdsForBatch.clear();
-    const cardTypeFilter = document.getElementById("batchFilterCardType") ? document.getElementById("batchFilterCardType").value : "";
-    
-    members.forEach(m => {
-        const matchesType = !cardTypeFilter || m.cardType === cardTypeFilter;
-        if (matchesType && (!onlyActive || m.status === "Active")) {
-            selectedMemberIdsForBatch.add(m.id);
-        }
-    });
+function toggleSelectAllBatch(checked) {
+    const filtered = getFilteredBatchMembers();
+    if (checked) {
+        filtered.forEach(m => selectedMemberIdsForBatch.add(m.id));
+    } else {
+        filtered.forEach(m => selectedMemberIdsForBatch.delete(m.id));
+    }
     renderBatchSelectionList();
     renderPrintCards();
+}
+
+function clearAllBatchSelections() {
+    selectedMemberIdsForBatch.clear();
+    renderBatchSelectionList();
+    renderPrintCards();
+}
+
+function selectAllForPrint(selectActive = true) {
+    if (!selectActive) {
+        clearAllBatchSelections();
+        return;
+    }
+    toggleSelectAllBatch(true);
 }
 
 // ==========================================================================
@@ -995,33 +1027,34 @@ function renderPrintCards() {
                         </div>
                         
                         <div class="nsa-theory-member-row">
-                            <div class="nsa-member-fullname">${m.firstName} ${m.surname}</div>
-                            <div class="nsa-member-id">${m.idNumber}</div>
+                            <div class="nsa-theory-member-col">
+                                <div class="nsa-member-fullname">${m.firstName} ${m.surname}</div>
+                                <div class="nsa-member-id">${m.idNumber}</div>
+                            </div>
+                            <div class="theory-district-box">
+                                <div class="nsa-info-box-title" style="text-decoration:underline;">DISTRICT</div>
+                                <div class="nsa-info-box-value" style="margin-top:2px;">${m.district}</div>
+                            </div>
                         </div>
 
-                        <!-- 2 Blue Blocks + District Box -->
+                        <!-- 2 Blue Blocks Spanning Full Width -->
                         <div class="nsa-theory-grid-container">
                             <div class="theory-blocks-wrapper">
                                 <div class="theory-block theory-block-blue">
+                                    <div class="theory-block-title">LEVEL 1</div>
+                                    <div class="theory-block-score">${m.level1Score || '%'}</div>
                                     <div class="theory-block-top">
                                         <span class="theory-block-year">${m.level1Year || ''}</span>
                                     </div>
-                                    <div class="theory-block-title">LEVEL 1</div>
-                                    <div class="theory-block-score">${m.level1Score || '%'}</div>
                                 </div>
 
                                 <div class="theory-block theory-block-blue">
+                                    <div class="theory-block-title">LEVEL 2</div>
+                                    <div class="theory-block-score">${m.level2Score || '%'}</div>
                                     <div class="theory-block-top">
                                         <span class="theory-block-year">${m.level2Year || ''}</span>
                                     </div>
-                                    <div class="theory-block-title">LEVEL 2</div>
-                                    <div class="theory-block-score">${m.level2Score || '%'}</div>
                                 </div>
-                            </div>
-
-                            <div class="theory-district-box">
-                                <div class="nsa-info-box-title" style="text-decoration:underline;">DISTRICT</div>
-                                <div class="nsa-info-box-value" style="margin-top:4px;">${m.district}</div>
                             </div>
                         </div>
 
@@ -1060,41 +1093,42 @@ function renderPrintCards() {
                         </div>
                         
                         <div class="nsa-theory-member-row">
-                            <div class="nsa-member-fullname">${m.firstName} ${m.surname}</div>
-                            <div class="nsa-member-id">${m.idNumber}</div>
+                            <div class="nsa-theory-member-col">
+                                <div class="nsa-member-fullname">${m.firstName} ${m.surname}</div>
+                                <div class="nsa-member-id">${m.idNumber}</div>
+                            </div>
+                            <div class="theory-district-box">
+                                <div class="nsa-info-box-title" style="text-decoration:underline;">DISTRICT</div>
+                                <div class="nsa-info-box-value" style="margin-top:2px;">${m.district}</div>
+                            </div>
                         </div>
 
-                        <!-- 3 Green Blocks + District Box -->
+                        <!-- 3 Green Blocks Spanning Full Width -->
                         <div class="nsa-theory-grid-container">
                             <div class="theory-blocks-wrapper">
                                 <div class="theory-block theory-block-green">
+                                    <div class="theory-block-title">LEVEL 1</div>
+                                    <div class="theory-block-score">${m.level1Score || '%'}</div>
                                     <div class="theory-block-top">
                                         <span class="theory-block-year">${m.level1Year || ''}</span>
                                     </div>
-                                    <div class="theory-block-title">LEVEL 1</div>
-                                    <div class="theory-block-score">${m.level1Score || '%'}</div>
                                 </div>
 
                                 <div class="theory-block theory-block-green">
+                                    <div class="theory-block-title">LEVEL 2</div>
+                                    <div class="theory-block-score">${m.level2Score || '%'}</div>
                                     <div class="theory-block-top">
                                         <span class="theory-block-year">${m.level2Year || ''}</span>
                                     </div>
-                                    <div class="theory-block-title">LEVEL 2</div>
-                                    <div class="theory-block-score">${m.level2Score || '%'}</div>
                                 </div>
 
                                 <div class="theory-block theory-block-green">
+                                    <div class="theory-block-title">LEVEL 3</div>
+                                    <div class="theory-block-score">${m.level3Score || '%'}</div>
                                     <div class="theory-block-top">
                                         <span class="theory-block-year">${m.level3Year || ''}</span>
                                     </div>
-                                    <div class="theory-block-title">LEVEL 3</div>
-                                    <div class="theory-block-score">${m.level3Score || '%'}</div>
                                 </div>
-                            </div>
-
-                            <div class="theory-district-box" style="width: 82px;">
-                                <div class="nsa-info-box-title" style="text-decoration:underline;">DISTRICT</div>
-                                <div class="nsa-info-box-value" style="margin-top:4px;">${m.district}</div>
                             </div>
                         </div>
 
@@ -1418,6 +1452,14 @@ function importData(event) {
         members = [...list, ...members];
         saveToLocalStorage();
 
+        // Automatically select the newly imported records for Card Studio preview
+        selectedMemberIdsForBatch.clear();
+        list.forEach(m => selectedMemberIdsForBatch.add(m.id));
+        const batchTypeSelect = document.getElementById("batchFilterCardType");
+        if (batchTypeSelect) batchTypeSelect.value = targetType;
+        const batchProvSelect = document.getElementById("batchFilterProvince");
+        if (batchProvSelect) batchProvSelect.value = "";
+
         // Sync to Cloud Firestore if connected
         if (window.CloudDB && window.CloudDB.isConnected()) {
             window.CloudDB.batchUpload(list);
@@ -1427,7 +1469,7 @@ function importData(event) {
         renderBatchSelectionList();
         renderPrintCards();
 
-        alert(`🎉 Success! Imported ${list.length} official records directly into "${targetMeta.label}"!${window.CloudDB && window.CloudDB.isConnected() ? '\n☁️ Synced live to Cloud Firestore.' : ''}`);
+        alert(`🎉 Success! Imported ${list.length} official records directly into "${targetMeta.label}"!\n\nThey have also been pre-selected in Card Studio ready for printing.${window.CloudDB && window.CloudDB.isConnected() ? '\n☁️ Synced live to Cloud Firestore.' : ''}`);
     };
 
     try {
@@ -1513,14 +1555,18 @@ function importData(event) {
                     const colProvince = findCol(["province", "prov", "provinsie"]);
                     const colDistrict = findCol(["district", "distrik", "region"]);
                     const colGrading = findCol(["grading", "grade", "grade letter", "gradering", "umpire grade"]);
-                    const colReceived = findCol(["received date", "received", "received_date", "valid from", "from date", "datum ontvang", "year"]);
+                    let colReceived = findCol(["received date", "received", "received_date", "valid from", "from date", "datum ontvang", "year", "exam year"]);
+                    if (colReceived === -1) {
+                        // Also detect a column whose header is itself a 4-digit year (e.g. '2026' in 'SURNAME,NAME,ID,DISTRICT,2026,Level 1,Level 2')
+                        colReceived = headers.findIndex(h => /^\d{4}$/.test(h));
+                    }
                     const colExpiry = findCol(["expiry date", "expiry", "expiry_date", "valid to", "to date", "vervaldatum"]);
                     const colValidity = findCol(["validity period", "validity years", "validity", "valid"]);
                     const colNua = findCol(["nua number", "nua nr", "nua no", "nua", "ticket nr"]);
                     const colStatus = findCol(["status"]);
                     const colCustomMemberId = findCol(["membership id", "member id", "official id"]);
 
-                    // Locate Theory Level 1, 2, 3 columns (supports merged header blocks like '2026 | LEVEL 1 (70%) | | ')
+                    // Locate Theory Level 1, 2, 3 columns (supports both '2026 | Level 1 | Level 2' and merged header blocks)
                     function locateLevelDescriptor(levelNum) {
                         let scoreStart = -1;
                         let scoreEnd = -1;
@@ -1553,26 +1599,30 @@ function importData(event) {
                     const lvl2Desc = locateLevelDescriptor(2);
                     const lvl3Desc = locateLevelDescriptor(3);
 
-                    function extractLevelData(rowArr, desc) {
+                    function extractLevelData(rowArr, desc, sharedYear) {
                         let score = "";
                         if (desc.scoreStart !== -1) {
                             for (let c = desc.scoreStart; c <= desc.scoreEnd; c++) {
                                 const val = getCell(rowArr, c);
-                                if (val !== "") {
+                                if (val !== "" && val !== "%") {
                                     score = val;
                                     break;
                                 }
                             }
                         }
+                        // Only assign a year to this level if the candidate actually has a score for this level
                         let year = "";
-                        if (desc.yearCol !== -1) {
-                            year = getCell(rowArr, desc.yearCol);
-                            // If score exists but row year cell is blank, fallback to 4-digit year in header if present
-                            if (!year && score && /^\d{4}$/.test(headers[desc.yearCol])) {
-                                year = headers[desc.yearCol];
+                        if (score) {
+                            if (desc.yearCol !== -1) {
+                                year = getCell(rowArr, desc.yearCol);
+                                if (!year && /^\d{4}$/.test(headers[desc.yearCol])) {
+                                    year = headers[desc.yearCol];
+                                }
+                            }
+                            if (!year && sharedYear) {
+                                year = sharedYear;
                             }
                         }
-                        // Only keep year if either score is present or year was explicitly entered in the row
                         return { year, score };
                     }
 
@@ -1582,20 +1632,26 @@ function importData(event) {
 
                         const surname = cleanName(getCell(rowArr, colSurname));
                         const firstName = cleanName(getCell(rowArr, colFirstName));
-                        const idNumber = getCell(rowArr, colIdNumber);
+                        let idNumber = getCell(rowArr, colIdNumber);
+                        if (/^\d{11,12}$/.test(idNumber)) {
+                            idNumber = idNumber.padStart(13, "0");
+                        }
                         const rawProvince = getCell(rowArr, colProvince);
                         const district = getCell(rowArr, colDistrict);
                         const province = inferProvince(rawProvince, district);
                         const grading = getCell(rowArr, colGrading);
-                        const receivedDate = getCell(rowArr, colReceived);
+                        let receivedDate = getCell(rowArr, colReceived);
+                        if (!receivedDate && colReceived !== -1 && /^\d{4}$/.test(headers[colReceived])) {
+                            receivedDate = headers[colReceived];
+                        }
                         const expiryDate = getCell(rowArr, colExpiry);
                         const validityYearsRaw = getCell(rowArr, colValidity);
                         const nuaNumber = getCell(rowArr, colNua);
                         const status = getCell(rowArr, colStatus) || "Active";
 
-                        const l1 = extractLevelData(rowArr, lvl1Desc);
-                        const l2 = extractLevelData(rowArr, lvl2Desc);
-                        const l3 = extractLevelData(rowArr, lvl3Desc);
+                        const l1 = extractLevelData(rowArr, lvl1Desc, receivedDate);
+                        const l2 = extractLevelData(rowArr, lvl2Desc, receivedDate);
+                        const l3 = extractLevelData(rowArr, lvl3Desc, receivedDate);
 
                         // Skip entirely empty rows
                         if (!surname && !firstName && !idNumber && !grading && !l1.score && !l2.score && !l3.score) continue;
@@ -1657,7 +1713,7 @@ function importData(event) {
                             gradeLetter: grading ? grading.toUpperCase().trim() : (targetType === "provincial_grading" ? "D" : "C"),
                             validityYears: valStr,
                             nuaNumber: nuaNumber || "",
-                            level1Year: l1.year || (targetType.includes("theory") && l1.score ? primaryYear : ""),
+                            level1Year: l1.year || "",
                             level1Score: formatScore(l1.score),
                             level2Year: l2.year || "",
                             level2Score: formatScore(l2.score),

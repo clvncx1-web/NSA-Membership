@@ -159,8 +159,8 @@
                         <p>Generate high-resolution printable cards for all 4 official Netball South Africa credential types.</p>
                     </div>
                     <div class="button-group">
-                        <button class="btn btn-outline" onclick="selectAllForPrint(true)">Select Active</button>
-                        <button class="btn btn-outline" onclick="selectAllForPrint(false)">Clear Selection</button>
+                        <button class="btn btn-outline" onclick="toggleSelectAllBatch(true)">Select All</button>
+                        <button class="btn btn-outline" onclick="clearAllBatchSelections()">Clear All</button>
                         <button class="btn btn-primary" onclick="exportSelectedCardsPDF()">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                             Export Batch PDF
@@ -195,6 +195,10 @@
                                     <option value="KwaZulu-Natal">KwaZulu-Natal</option>
                                     <option value="Eastern Cape">Eastern Cape</option>
                                     <option value="Free State">Free State</option>
+                                    <option value="Mpumalanga">Mpumalanga</option>
+                                    <option value="Limpopo">Limpopo</option>
+                                    <option value="North West">North West</option>
+                                    <option value="Northern Cape">Northern Cape</option>
                                 </select>
                             </div>
                         </div>
@@ -203,6 +207,13 @@
                             <div class="section-header-row">
                                 <h3>Batch Selection</h3>
                                 <span class="selection-counter" id="selectionCounter">0 selected</span>
+                            </div>
+                            <div class="batch-actions-bar">
+                                <label class="batch-select-all-label" for="selectAllBatchCheckbox">
+                                    <input type="checkbox" id="selectAllBatchCheckbox" onchange="toggleSelectAllBatch(this.checked)">
+                                    <span>Select All</span>
+                                </label>
+                                <button type="button" class="btn-clear-batch" onclick="clearAllBatchSelections()">Clear All</button>
                             </div>
                             <div class="batch-list-container" id="batchList">
                                 <!-- Checkboxes populated by JS -->

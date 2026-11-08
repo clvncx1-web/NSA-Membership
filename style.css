@@ -505,6 +505,52 @@ body {
     background: #f8fafc;
 }
 
+.batch-actions-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    background: #f1f5f9;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+}
+
+.batch-select-all-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: #0f172a;
+    cursor: pointer;
+    user-select: none;
+}
+
+.batch-select-all-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #005A36;
+    cursor: pointer;
+}
+
+.btn-clear-batch {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #dc2626;
+    font-size: 0.76rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-clear-batch:hover {
+    background: #fef2f2;
+    border-color: #f87171;
+}
+
 .batch-item {
     display: flex;
     align-items: center;
@@ -889,15 +935,24 @@ body {
 .nsa-theory-member-row {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-top: 4px;
+    align-items: center;
+    gap: 8px;
+    margin-top: 3px;
+}
+
+.nsa-theory-member-col {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
 }
 
 .nsa-theory-grid-container {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     align-items: stretch;
-    margin-top: 6px;
+    margin-top: 4px;
     flex: 1;
 }
 
@@ -905,41 +960,44 @@ body {
     display: flex;
     gap: 8px;
     flex: 1;
+    width: 100%;
 }
 
 .theory-block {
     flex: 1;
-    height: 104px;
+    height: 82px;
     border-radius: 4px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 5px 4px;
-    box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.12);
+    padding: 4px 6px;
+    box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.14);
     text-align: center;
+    position: relative;
 }
 
 .theory-block-blue {
-    background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
-    border: 1.5px solid #38bdf8;
+    background: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 100%);
+    border: 1.5px solid #0284c7;
 }
 
 .theory-block-green {
-    background: linear-gradient(180deg, #f0fdf4 0%, #d1fae5 100%);
-    border: 1.5px solid #34d399;
+    background: linear-gradient(180deg, #dcfce7 0%, #a7f3d0 100%);
+    border: 1.5px solid #059669;
 }
 
 .theory-block-top {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    justify-content: flex-start;
+    align-items: flex-end;
 }
 
 .theory-block-year {
-    font-size: 0.65rem;
+    font-size: 0.62rem;
     font-weight: 800;
     color: #0f172a;
-    min-height: 14px;
+    min-height: 12px;
+    line-height: 1;
 }
 
 .theory-block-title {
@@ -949,24 +1007,24 @@ body {
     color: #000000;
     text-transform: uppercase;
     letter-spacing: 0.3px;
-    margin-top: 2px;
+    margin-top: 1px;
 }
 
 .theory-block-score {
     font-family: 'Montserrat', 'Inter', sans-serif;
-    font-size: 1.45rem;
+    font-size: 1.4rem;
     font-weight: 900;
     color: #000000;
-    margin-bottom: 2px;
-    line-height: 1.1;
+    line-height: 1.05;
 }
 
 .theory-district-box {
-    width: 88px;
+    min-width: 105px;
+    max-width: 155px;
     border: 1.5px dashed #94a3b8;
     border-radius: 4px;
-    padding: 5px 4px;
-    background: rgba(255, 255, 255, 0.85);
+    padding: 3px 8px;
+    background: rgba(255, 255, 255, 0.88);
     display: flex;
     flex-direction: column;
     justify-content: center;
