@@ -110,8 +110,13 @@ const CARD_TYPE_META = {
     }
 };
 
+const CENTRAL_ADMIN_USER = "AdminBester?";
+const CENTRAL_ADMIN_PASS = "Retseb001!";
+
 // Initialize Application
 document.addEventListener("DOMContentLoaded", () => {
+    checkAdminAuth();
+
     const savedData = localStorage.getItem("nsa_sports_members_db_v3");
     if (savedData) {
         try { members = JSON.parse(savedData); } catch(e) {}
@@ -128,6 +133,66 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initialize Cloud Database listeners & sync
     initCloudDB();
 });
+
+// ==========================================================================
+// CENTRAL ADMIN AUTHENTICATION & SECURITY GATE
+// ==========================================================================
+function checkAdminAuth() {
+    const isAuth = sessionStorage.getItem("nsa_admin_authenticated") === "true";
+    const overlay = document.getElementById("authLoginOverlay");
+    const appContainer = document.getElementById("appMainContainer");
+
+    if (isAuth) {
+        if (overlay) overlay.style.display = "none";
+        if (appContainer) appContainer.style.display = "block";
+    } else {
+        if (overlay) overlay.style.display = "flex";
+        if (appContainer) appContainer.style.display = "none";
+    }
+}
+
+function handleAdminLogin(event) {
+    event.preventDefault();
+    const userInp = document.getElementById("loginUsername");
+    const passInp = document.getElementById("loginPassword");
+    const errBox = document.getElementById("loginErrorMsg");
+
+    const enteredUser = userInp ? userInp.value.trim() : "";
+    const enteredPass = passInp ? passInp.value : "";
+
+    if (enteredUser === CENTRAL_ADMIN_USER && enteredPass === CENTRAL_ADMIN_PASS) {
+        sessionStorage.setItem("nsa_admin_authenticated", "true");
+        if (errBox) errBox.style.display = "none";
+        checkAdminAuth();
+        renderPrintCards();
+    } else {
+        if (errBox) errBox.style.display = "block";
+        if (passInp) {
+            passInp.value = "";
+            passInp.focus();
+        }
+    }
+}
+
+function logoutAdmin() {
+    sessionStorage.removeItem("nsa_admin_authenticated");
+    const userInp = document.getElementById("loginUsername");
+    const passInp = document.getElementById("loginPassword");
+    const errBox = document.getElementById("loginErrorMsg");
+    if (userInp) userInp.value = "";
+    if (passInp) {
+        passInp.value = "";
+        passInp.type = "password";
+    }
+    if (errBox) errBox.style.display = "none";
+    checkAdminAuth();
+}
+
+function togglePasswordVisibility() {
+    const passInp = document.getElementById("loginPassword");
+    if (!passInp) return;
+    passInp.type = passInp.type === "password" ? "text" : "password";
+}
 
 // ==========================================================================
 // CLOUD DATABASE INTEGRATION (GOOGLE FIRESTORE)
@@ -315,20 +380,6 @@ function disconnectCloudDB() {
     }
 }
 
-// Role Toggle Simulator
-function toggleRole() {
-    if (currentRole === "Central Admin") {
-        currentRole = "District Admin (Gauteng)";
-    } else if (currentRole === "District Admin (Gauteng)") {
-        currentRole = "Tournament Referee (Read-Only)";
-    } else {
-        currentRole = "Central Admin";
-    }
-    const badgeText = document.getElementById("roleBadgeText");
-    if (badgeText) badgeText.textContent = currentRole + " Mode";
-    renderTable();
-}
-
 // Main Top Navigation Tabs
 function switchTab(tabId) {
     document.querySelectorAll(".nav-tab").forEach(tab => tab.classList.remove("active"));
@@ -446,10 +497,6 @@ function renderTable() {
         
         const matchesProv = !prov || m.province === prov;
         const matchesStatus = !status || m.status === status;
-        
-        if (currentRole.includes("District Admin") && m.province !== "Gauteng") {
-            return false;
-        }
 
         return matchesCardType && matchesSearch && matchesProv && matchesStatus;
     });
@@ -542,11 +589,9 @@ function renderActionButtons(id, token, status) {
     return `
         <div class="button-group" style="justify-content: flex-end; gap: 4px;">
             <button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="quickVerify('${token}')">Verify</button>
-            ${currentRole.includes("Referee") ? '' : `
-                <button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="editMember('${id}')">Edit</button>
-                <button class="btn btn-danger" style="padding:4px 8px; font-size:0.75rem;" onclick="toggleSuspend('${id}')">${status === 'Active' ? 'Suspend' : 'Activate'}</button>
-                <button class="btn btn-danger" style="padding:4px 7px; font-size:0.75rem; background:#dc2626; border-color:#dc2626;" onclick="deleteMember('${id}')" title="Permanently delete member record">&times;</button>
-            `}
+            <button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="editMember('${id}')">Edit</button>
+            <button class="btn btn-danger" style="padding:4px 8px; font-size:0.75rem;" onclick="toggleSuspend('${id}')">${status === 'Active' ? 'Suspend' : 'Activate'}</button>
+            <button class="btn btn-danger" style="padding:4px 7px; font-size:0.75rem; background:#dc2626; border-color:#dc2626;" onclick="deleteMember('${id}')" title="Permanently delete member record">&times;</button>
         </div>
     `;
 }
@@ -1183,44 +1228,100 @@ function renderPrintCards() {
         pair.innerHTML = cardFrontHtml + cardBackHtml;
         sheet.appendChild(pair);
 
-        // Dynamic QR code generation
-        setTimeout(() => {
-            const qrContainer = document.getElementById(`qr_${m.id}`);
-            if (qrContainer) {
-                qrContainer.innerHTML = "";
-                new QRCode(qrContainer, {
-                    text: `https://verify.netballsa.org.za/v?token=${m.token}&id=${m.id}`,
-                    width: 96,
-                    height: 96,
-                    colorDark: "#005A36",
-                    colorLight: "#ffffff",
-                    correctLevel: QRCode.CorrectLevel.H
-                });
-            }
-        }, 50);
+        // Synchronous QR code generation so all cards are immediately ready for batch PDF export
+        const qrContainer = pair.querySelector(".qr-box");
+        if (qrContainer) {
+            qrContainer.innerHTML = "";
+            new QRCode(qrContainer, {
+                text: `https://verify.netballsa.org.za/v?token=${m.token}&id=${m.id}`,
+                width: 96,
+                height: 96,
+                colorDark: "#005A36",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
     });
 }
 
-// Side-by-Side A4 Portrait Export (Zero Right-Side Cutoff)
+// Side-by-Side A4 Portrait Export (Page-by-Page Chunked Rendering — Prevents Blank Canvas Overflow on Large Batches)
 function exportSelectedCardsPDF() {
     const element = document.getElementById("printSheet");
     if (!element) return;
 
+    const allPairs = Array.from(element.querySelectorAll(".card-pair"));
+    if (allPairs.length === 0) {
+        alert("Please select at least one official from the Batch Selection list to export.");
+        return;
+    }
+
+    const exportBtn = document.getElementById("exportPdfBtn");
+    const originalBtnHtml = exportBtn ? exportBtn.innerHTML : "";
+    if (exportBtn) {
+        exportBtn.disabled = true;
+    }
+
+    const prevScrollX = window.scrollX;
+    const prevScrollY = window.scrollY;
+    window.scrollTo(0, 0);
+
     element.classList.add("pdf-exporting");
+
+    const CARDS_PER_PAGE = 3;
+    const totalPages = Math.ceil(allPairs.length / CARDS_PER_PAGE);
+    const filename = `netball_sa_cards_${new Date().toISOString().split('T')[0]}.pdf`;
 
     const opt = {
         margin:       [6, 2, 6, 2],
-        filename:     `netball_sa_cards_${new Date().toISOString().split('T')[0]}.pdf`,
+        filename:     filename,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        html2canvas:  { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0, backgroundColor: '#ffffff' },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+        pagebreak:    { mode: [] }
     };
 
-    html2pdf().set(opt).from(element).save().then(() => {
+    const restoreSheet = () => {
+        element.innerHTML = "";
+        allPairs.forEach(pair => element.appendChild(pair));
         element.classList.remove("pdf-exporting");
-    }).catch(err => {
-        element.classList.remove("pdf-exporting");
+        window.scrollTo(prevScrollX, prevScrollY);
+        if (exportBtn) {
+            exportBtn.disabled = false;
+            exportBtn.innerHTML = originalBtnHtml;
+        }
+    };
+
+    let worker = html2pdf().set(opt);
+
+    for (let pageIdx = 0; pageIdx < totalPages; pageIdx++) {
+        worker = worker.then(function () {
+            if (exportBtn) {
+                exportBtn.innerHTML = `Exporting Page ${pageIdx + 1} / ${totalPages}...`;
+            }
+            const slice = allPairs.slice(pageIdx * CARDS_PER_PAGE, (pageIdx + 1) * CARDS_PER_PAGE);
+            element.innerHTML = "";
+            slice.forEach(pair => element.appendChild(pair));
+        });
+
+        if (pageIdx === 0) {
+            worker = worker.from(element).toContainer().toCanvas().toPdf();
+        } else {
+            worker = worker.from(element).toContainer().toCanvas().then(function () {
+                this.prop.pdf.addPage();
+            }).toPdf();
+        }
+    }
+
+    worker.then(function () {
+        if (exportBtn) {
+            exportBtn.innerHTML = "Saving PDF...";
+        }
+    }).save().then(function () {
+        restoreSheet();
+    }).catch(function (err) {
+        console.error("PDF Export Error:", err);
+        restoreSheet();
+        alert("An error occurred while exporting the PDF: " + err.message);
     });
 }
 
