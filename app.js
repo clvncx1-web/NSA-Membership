@@ -59,27 +59,6 @@ let members = [
         status: "Active",
         token: "TOK-77A40F",
         lastAudit: "Technical Official Level 1 Passed"
-    },
-    {
-        id: "ZA-TSH-THEORY-2023-0019",
-        firstName: "Bonolo Lethabo",
-        surname: "Bokaba",
-        idNumber: "0303070120082",
-        province: "Gauteng",
-        district: "Tshwane",
-        nuaNumber: "",
-        cardType: "national_theory",
-        level1Year: "2023",
-        level1Score: "78%",
-        level2Year: "",
-        level2Score: "%",
-        level3Year: "",
-        level3Score: "%",
-        issueDate: "2023-08-01",
-        expiryDate: "2026-08-01",
-        status: "Active",
-        token: "TOK-11E88B",
-        lastAudit: "National Theory Level 1 Passed (78%)"
     }
 ];
 
@@ -110,7 +89,7 @@ const CARD_TYPE_META = {
     }
 };
 
-const CENTRAL_ADMIN_USER = "AdminBester?";
+const CENTRAL_ADMIN_USER = "AdminBester";
 const CENTRAL_ADMIN_PASS = "Retseb001!";
 
 // Initialize Application
@@ -120,6 +99,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const savedData = localStorage.getItem("nsa_sports_members_db_v3");
     if (savedData) {
         try { members = JSON.parse(savedData); } catch(e) {}
+    }
+
+    // One-time cleanup of National Theory records from local cache to match Cloud DB reset
+    if (!localStorage.getItem("nsa_cleared_nat_theory_20261109")) {
+        members = members.filter(m => m.cardType !== "national_theory");
+        saveToLocalStorage();
+        localStorage.setItem("nsa_cleared_nat_theory_20261109", "true");
     }
     
     switchRegistryCardType("national_grading");
