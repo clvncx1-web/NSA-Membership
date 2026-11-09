@@ -497,6 +497,9 @@ function renderTable() {
                 <td style="text-align: right;">${renderActionButtons(m.id, m.token, m.status)}</td>
             `;
         } else if (currentRegistryCardType === "technical_theory") {
+            const fmtLvl = (score, yr) => (score && score !== "%")
+                ? `<strong style="color:#0284c7; font-size:0.92rem;">${score}</strong> ${yr ? '<small style="color:#64748b;">(' + yr + ')</small>' : ''}`
+                : `<span style="color:#94a3b8;">%</span>`;
             tr.innerHTML = `
                 <td class="member-info">
                     <strong>${m.firstName} ${m.surname}</strong>
@@ -504,14 +507,17 @@ function renderTable() {
                 </td>
                 <td><code>${m.id}</code><br><small style="color:#64748b;">ID: ${m.idNumber}</small></td>
                 <td><strong>${m.district}</strong><br><small style="color:#64748b;">${m.province}</small></td>
-                <td><strong style="color:#0284c7; font-size:0.92rem;">${m.level1Score || '%'}</strong> ${m.level1Year ? '<small style="color:#64748b;">('+m.level1Year+')</small>' : ''}</td>
-                <td><strong>${m.level2Score || '%'}</strong> ${m.level2Year ? '<small style="color:#64748b;">('+m.level2Year+')</small>' : ''}</td>
+                <td>${fmtLvl(m.level1Score, m.level1Year)}</td>
+                <td>${fmtLvl(m.level2Score, m.level2Year)}</td>
                 <td>${m.expiryDate}</td>
                 <td><span class="badge badge-${m.status.toLowerCase()}">${m.status}</span></td>
                 <td style="text-align: right;">${renderActionButtons(m.id, m.token, m.status)}</td>
             `;
         } else {
             // national_theory
+            const fmtLvl = (score, yr) => (score && score !== "%")
+                ? `<strong style="color:#059669; font-size:0.92rem;">${score}</strong> ${yr ? '<small style="color:#64748b;">(' + yr + ')</small>' : ''}`
+                : `<span style="color:#94a3b8;">%</span>`;
             tr.innerHTML = `
                 <td class="member-info">
                     <strong>${m.firstName} ${m.surname}</strong>
@@ -519,9 +525,9 @@ function renderTable() {
                 </td>
                 <td><code>${m.id}</code><br><small style="color:#64748b;">ID: ${m.idNumber}</small></td>
                 <td><strong>${m.district}</strong><br><small style="color:#64748b;">${m.province}</small></td>
-                <td><strong style="color:#059669; font-size:0.92rem;">${m.level1Score || '%'}</strong> ${m.level1Year ? '<small style="color:#64748b;">('+m.level1Year+')</small>' : ''}</td>
-                <td><strong>${m.level2Score || '%'}</strong> ${m.level2Year ? '<small style="color:#64748b;">('+m.level2Year+')</small>' : ''}</td>
-                <td><strong>${m.level3Score || '%'}</strong> ${m.level3Year ? '<small style="color:#64748b;">('+m.level3Year+')</small>' : ''}</td>
+                <td>${fmtLvl(m.level1Score, m.level1Year)}</td>
+                <td>${fmtLvl(m.level2Score, m.level2Year)}</td>
+                <td>${fmtLvl(m.level3Score, m.level3Year)}</td>
                 <td>${m.expiryDate}</td>
                 <td><span class="badge badge-${m.status.toLowerCase()}">${m.status}</span></td>
                 <td style="text-align: right;">${renderActionButtons(m.id, m.token, m.status)}</td>
@@ -1404,7 +1410,7 @@ function importData(event) {
         if (d.includes("capricorn") || d.includes("mopani") || d.includes("sekhukhune") || d.includes("sekukhune") || d.includes("vhembe") || d.includes("waterberg")) return "Limpopo";
         if (d.includes("ehlanzeni") || d.includes("gert sibande") || d.includes("nkangala")) return "Mpumalanga";
         if (d.includes("frances baard") || d.includes("gaetsewe") || d.includes("namakwa") || d.includes("pixley") || d.includes("mgcawu")) return "Northern Cape";
-        if (d.includes("cape town") || d.includes("winelands") || d.includes("garden route") || d.includes("eden") || d.includes("overberg") || d.includes("west coast") || d.includes("karoo")) return "Western Cape";
+        if (d.includes("cape town") || d.includes("winelands") || d.includes("garden route") || d.includes("eden") || d.includes("overberg") || d.includes("west coast") || d.includes("karoo") || d.includes("metro") || d.includes("bellville") || d.includes("meed")) return "Western Cape";
         return dist && dist.trim() ? dist.trim() : "National";
     }
 
@@ -1631,8 +1637,12 @@ function importData(event) {
                         if (!rowArr || rowArr.length === 0) continue;
 
                         const surname = cleanName(getCell(rowArr, colSurname));
-                        const firstName = cleanName(getCell(rowArr, colFirstName));
-                        let idNumber = getCell(rowArr, colIdNumber);
+                        let firstName = cleanName(getCell(rowArr, colFirstName));
+                        // Deduplicate trailing surname if accidentally repeated in the NAME column (e.g. 'Jessica Madonsela' + 'Madonsela')
+                        if (surname && firstName.toLowerCase().endsWith(" " + surname.toLowerCase())) {
+                            firstName = firstName.slice(0, firstName.length - surname.length - 1).trim();
+                        }
+                        let idNumber = getCell(rowArr, colIdNumber).replace(/^[^0-9A-Za-z]+|[^0-9A-Za-z]+$/g, "");
                         if (/^\d{11,12}$/.test(idNumber)) {
                             idNumber = idNumber.padStart(13, "0");
                         }
@@ -1656,8 +1666,8 @@ function importData(event) {
                         // Skip entirely empty rows
                         if (!surname && !firstName && !idNumber && !grading && !l1.score && !l2.score && !l3.score) continue;
 
-                        // Determine primary exam/received year for issue & expiry dates
-                        const primaryYear = receivedDate || l3.year || l2.year || l1.year || String(new Date().getFullYear());
+                        // Determine primary exam/received year for issue & expiry dates (prefer highest completed level year)
+                        const primaryYear = l3.year || l2.year || l1.year || receivedDate || String(new Date().getFullYear());
 
                         // Calculate Validity Period text (e.g. VALID 2026 - 2029)
                         let valStr = validityYearsRaw;
